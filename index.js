@@ -81,29 +81,35 @@ server.delete("/api/users:id", (req, res) => {
 server.put("/api/users/:id", (req, res) => {
   const { id } = req.params;
   const { name, bio } = req.body;
-  db.update(id)
+  if (!name || !bio) {
+    res
+      .status(400)
+      .json({ message: "Please provide name and bio for the user." });
+  }
+  db.update(id, { name, bio})
     .then(response => {
       if (response === 0) {
         res
           .status(404)
           .json({ message: "The user with the specified ID does not exist." });
-        return;
+      } else {
+        res.status(201).json(response)
       }
     })
     .catch(err => {
       res
         .status(500)
         .json({ error: "The user information could not be modified." });
-      return;
     });
-  if (!name || !bio) {
-    res
-      .status(400)
-      .json({ message: "Please provide name and bio for the user." });
-    return;
-  }
 });
 
+// server.put("/api/users/:id", (req, res) => {
+//   const { id } = req.params;
+//   const { name, bio } = req.body;
+//   db.update(id, req.body).then(response => {
+//     res.status(201).json(response)
+//   })
+// })
 server.get("/now", (req, res) => {
   const now = new Date().toISOString();
   res.send(now);
